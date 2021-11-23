@@ -26,18 +26,18 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
         return;
     }
 
-    std::vector<std::filesystem::path> folder1_files = getFilePaths(folder1);
-    std::vector<std::filesystem::path> folder2_files = getFilePaths(folder2);
+    auto folder1_files = getFilePaths(folder1);
+    auto folder2_files = getFilePaths(folder2);
 
     for(const auto& f1 : folder1_files)
     {
-        std::vector<std::string> temp {f1.string()};
+        std::vector<std::string> temp {f1.path().string()};
 
         for(const auto& f2 : folder2_files)
         {
             if(isEqualFiles(f1, f2) == true)
             {
-                temp.push_back(f2.string());
+                temp.push_back(f2.path().string());
             }
         }
 
@@ -49,18 +49,26 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
 
 }
 
-bool EqualFileFinder::isEqualFiles(const std::filesystem::path& left_file_path, const std::filesystem::path& right_file_path)
+bool EqualFileFinder::isEqualFiles(const std::filesystem::directory_entry& left_file, const std::filesystem::directory_entry& right_file)
 {
+
+    //precondition check
+    if(left_file.file_size() != right_file.file_size())
+    {
+        return false;
+    }
+
     if(settings.at(Settings::TheSameFileNames) == true)
     {
-        if(left_file_path.filename() != right_file_path.filename())
+        if(left_file.path().filename() != left_file.path().filename())
         {
             return false;
         }
     }
 
-    lFileStream.open(left_file_path, std::ifstream::in | std::ifstream::binary);
-    rFileStream.open(right_file_path, std::ifstream::in | std::ifstream::binary);
+    //main check
+    lFileStream.open(left_file, std::ifstream::in | std::ifstream::binary);
+    rFileStream.open(right_file, std::ifstream::in | std::ifstream::binary);
 
     if(!lFileStream.is_open() || !rFileStream.is_open())
     {
@@ -92,7 +100,7 @@ bool EqualFileFinder::isEqualFiles(const std::filesystem::path& left_file_path, 
     return is_equal;
 }
 
-std::vector<std::filesystem::path> EqualFileFinder::getFilePaths(const std::string& folder) const
+std::vector<std::filesystem::directory_entry> EqualFileFinder::getFilePaths(const std::string& folder) const
 {
 
     std::function<bool(std::filesystem::directory_entry)> file_predicate = [&](const auto&)
@@ -116,13 +124,13 @@ std::vector<std::filesystem::path> EqualFileFinder::getFilePaths(const std::stri
 
     auto get_entries = [&](auto&& directory_iterator, const auto& predicate)
     {
-        std::vector<std::filesystem::path> result;
+        std::vector<std::filesystem::directory_entry> result;
 
         for(const auto& file : directory_iterator)
         {
             if(predicate(file))
             {
-                result.push_back(file.path());
+                result.push_back(file);
             }
         }
 

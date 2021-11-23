@@ -140,9 +140,17 @@ void MainWindow::on_pushButton_Start_clicked()
     }
 
     printResults();
-    saveResultsToFile();
 
-    ui->label_Status->setText("Done. Saved into \"search results.txt\"");
+    if(file_finder.getSearchResults().size() > 0)
+    {
+        saveResultsToFile();
+        ui->label_Status->setText("Done. Saved into \"search results.txt\".");
+    }
+    else
+    {
+        ui->label_Status->setText("Done. No equal files found.");
+    }
+
 }
 
 void MainWindow::on_checkBox_OnlyTheSameFileNames_toggled(bool checked)

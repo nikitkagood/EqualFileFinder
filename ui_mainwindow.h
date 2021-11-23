@@ -148,7 +148,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "Equal file finder", nullptr));
         pushButton_Start->setText(QCoreApplication::translate("MainWindow", "Start", nullptr));
         checkBox_OnlyTheSameFileNames->setText(QCoreApplication::translate("MainWindow", "Only the same file names", nullptr));
         checkBox_CheckUnderlyingFolders->setText(QCoreApplication::translate("MainWindow", "Check underlying folders ", nullptr));

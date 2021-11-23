@@ -43,9 +43,9 @@ public:
 private:
     static const unsigned int BUFFER_SIZE = 1024; //in bytes
 
-    bool isEqualFiles(const std::filesystem::path& left_file_path, const std::filesystem::path& right_file_path);
+    bool isEqualFiles(const std::filesystem::directory_entry& left_file_path, const std::filesystem::directory_entry& right_file_path);
 
-    std::vector<std::filesystem::path> getFilePaths(const std::string& folder) const;
+    std::vector<std::filesystem::directory_entry> getFilePaths(const std::string& folder) const;
 
     std::ifstream lFileStream;
     std::ifstream rFileStream;
