@@ -76,7 +76,7 @@ void MainWindow::printResults()
 
 void MainWindow::saveResultsToFile()
 {
-    std::ofstream stream("search results.txt");
+    std::ofstream stream("search_results.txt");
 
     stream << "Results of the search are:" << '\n' << '\n';
 
