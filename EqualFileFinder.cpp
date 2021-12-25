@@ -15,6 +15,12 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
         return;
     }
 
+    if(folder1 == folder2)
+    {
+        throw std::string{"Folders are the same"};
+        return;
+    }
+
     if(!std::filesystem::exists(folder1))
     {
         throw std::runtime_error("Path " + folder1 + " does not exist");
@@ -29,15 +35,34 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
     auto folder1_files = getFilePaths(folder1);
     auto folder2_files = getFilePaths(folder2);
 
-    for(const auto& f1 : folder1_files)
-    {
-        std::vector<std::string> temp {f1.path().string()};
+    lHashes = std::move(calcHashes(folder1_files));
+    rHashes = std::move(calcHashes(folder2_files));
 
-        for(const auto& f2 : folder2_files)
+    findEqualHashes();
+
+}
+
+void EqualFileFinder::findEqualHashes()
+{
+    for(const auto& lHash : lHashes)
+    {
+        std::vector<std::string> temp{ lHash.first.path().string() };
+
+        for(const auto& rHash : rHashes)
         {
-            if(isEqualFiles(f1, f2) == true)
+            bool is_equal = true;
+            for(size_t i = 0; i < lHash.second.size(); i++)
             {
-                temp.push_back(f2.path().string());
+                if(lHash.second[i] != rHash.second[i])
+                {
+                    is_equal = false;
+                    break;
+                }
+            }
+
+            if(is_equal)
+            {
+                temp.push_back(rHash.first.path().string());
             }
         }
 
@@ -49,60 +74,8 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
 
 }
 
-bool EqualFileFinder::isEqualFiles(const std::filesystem::directory_entry& left_file, const std::filesystem::directory_entry& right_file)
-{
-
-    //precondition check
-    if(left_file.file_size() != right_file.file_size())
-    {
-        return false;
-    }
-
-    if(settings.at(Settings::TheSameFileNames) == true)
-    {
-        if(left_file.path().filename() != left_file.path().filename())
-        {
-            return false;
-        }
-    }
-
-    //main check
-    lFileStream.open(left_file, std::ifstream::in | std::ifstream::binary);
-    rFileStream.open(right_file, std::ifstream::in | std::ifstream::binary);
-
-    if(!lFileStream.is_open() || !rFileStream.is_open())
-    {
-        return false;
-    }
-
-    bool is_equal = true;
-
-    while (lFileStream.good() || rFileStream.good())
-    {
-        lFileStream.read(lBuffer.data(), BUFFER_SIZE);
-        rFileStream.read(rBuffer.data(), BUFFER_SIZE);
-
-        if(lBuffer != rBuffer)
-        {
-            is_equal = false;
-            break;
-        }
-    }
-
-    //clear everything
-    std::fill(std::begin(lBuffer), std::end(lBuffer), 0);
-    std::fill(std::begin(rBuffer), std::end(rBuffer), 0);
-    lFileStream.clear();
-    rFileStream.clear();
-    lFileStream.close();
-    rFileStream.close();
-
-    return is_equal;
-}
-
 std::vector<std::filesystem::directory_entry> EqualFileFinder::getFilePaths(const std::string& folder) const
 {
-
     std::function<bool(std::filesystem::directory_entry)> file_predicate = [&](const auto&)
     {
         //default - no predicate
@@ -146,3 +119,54 @@ std::vector<std::filesystem::directory_entry> EqualFileFinder::getFilePaths(cons
         return get_entries(std::filesystem::directory_iterator(folder), file_predicate);
     }
 }
+
+std::map<std::filesystem::directory_entry, QByteArray> EqualFileFinder::calcHashes(std::vector<std::filesystem::directory_entry> directories)
+{
+    std::map<std::filesystem::directory_entry, QByteArray> hashes;
+
+    for(const auto& dir_entry : directories)
+    {
+        if(dir_entry.file_size() == 0)
+        {
+            hashes.insert({ dir_entry, QByteArray() });
+            continue;
+        }
+
+        fileStream.open(dir_entry, std::ifstream::in | std::ifstream::binary);
+
+        if(!fileStream.is_open())
+        {
+            throw std::runtime_error("File stream failed to open - cannot read a file");
+        }
+
+        unsigned left_to_read = dir_entry.file_size();
+
+        while (fileStream.good())
+        {
+            if(left_to_read >= BUFFER_SIZE)
+            {
+                fileStream.read(dataBuffer.data(), BUFFER_SIZE);
+                hash_algorithm.addData(dataBuffer.data(), dataBuffer.size());
+                left_to_read -= BUFFER_SIZE;
+
+                std::fill(std::begin(dataBuffer), std::end(dataBuffer), 0);
+            }
+            else
+            {
+                fileStream.read(dataBuffer.data(), left_to_read);
+                hash_algorithm.addData(dataBuffer.data(), left_to_read);
+
+                std::fill(std::begin(dataBuffer), std::begin(dataBuffer) + left_to_read, 0);
+            }
+        }
+
+        hashes.insert({ dir_entry, hash_algorithm.result().toHex() });
+        hash_algorithm.reset();
+
+        fileStream.clear();
+        fileStream.close();
+    }
+
+    return hashes;
+}
+

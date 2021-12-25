@@ -81,7 +81,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -102,7 +102,7 @@
     <ClCompile Include="mainwindow.cpp" />
     <QtRcc Include="EqualFileFinder.qrc" />
     <QtUic Include="EqualFileFinder.ui" />
-    <QtMoc Include="EqualFileFinder.h" />
+    <ClInclude Include="EqualFileFinder.h" />
     <ClCompile Include="EqualFileFinder.cpp" />
     <ClCompile Include="main.cpp" />
     <QtUic Include="mainwindow.ui" />

@@ -9,6 +9,11 @@
 #include <filesystem>
 #include <stdexcept>
 #include <functional>
+#include <iterator>
+
+#include <QCryptographicHash>
+#include <QByteArray>
+#include <QString>
 
 #include "Profiler.h"
 
@@ -41,18 +46,16 @@ public:
     }
 
 private:
-    static const unsigned int BUFFER_SIZE = 1024; //in bytes
+    static const unsigned int BUFFER_SIZE = 1024 * 5; //in bytes
 
-    bool isEqualFiles(const std::filesystem::directory_entry& left_file_path, const std::filesystem::directory_entry& right_file_path);
+    void findEqualHashes();
 
     std::vector<std::filesystem::directory_entry> getFilePaths(const std::string& folder) const;
 
-    std::ifstream lFileStream;
-    std::ifstream rFileStream;
+    std::map<std::filesystem::directory_entry, QByteArray> calcHashes(std::vector<std::filesystem::directory_entry> directories);
 
-    std::array<char, BUFFER_SIZE> lBuffer{};
-    std::array<char, BUFFER_SIZE> rBuffer{};
-
+    std::ifstream fileStream;
+    std::array<char, BUFFER_SIZE> dataBuffer;
     std::vector<std::vector<std::string>> search_results;
 
     std::map<Settings, bool> settings //it already contains default settings
@@ -62,4 +65,7 @@ private:
         {Settings::ExcludeEmptyFiles, true}
     };
 
+    QCryptographicHash hash_algorithm{ QCryptographicHash::Algorithm::Md5 };
+    std::map<std::filesystem::directory_entry, QByteArray> lHashes;
+    std::map<std::filesystem::directory_entry, QByteArray> rHashes;
 };
