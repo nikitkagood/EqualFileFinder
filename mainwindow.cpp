@@ -139,7 +139,7 @@ void MainWindow::on_pushButton_Start_clicked()
         exit(-99);
     }
 
-    printResults();
+    //printResults();
 
     if(file_finder.getSearchResults().size() > 0)
     {

@@ -15,6 +15,12 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
         return;
     }
 
+    if(folder1 == folder2)
+    {
+        throw std::string{"Folders are the same"};
+        return;
+    }
+
     if(!std::filesystem::exists(folder1))
     {
         throw std::runtime_error("Path " + folder1 + " does not exist");
@@ -51,7 +57,6 @@ void EqualFileFinder::findEqualFiles(const std::string& folder1, const std::stri
 
 bool EqualFileFinder::isEqualFiles(const std::filesystem::directory_entry& left_file, const std::filesystem::directory_entry& right_file)
 {
-
     //precondition check
     if(left_file.file_size() != right_file.file_size())
     {
