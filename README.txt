@@ -13,11 +13,12 @@
 	Она работает быстро. Особенно на меньших данных.
 	Ее недостатаок - чтение файлов происходит по нескольку раз (пусть чаще всего и не полностью).
 
-	- (ветка hash_version) Более сложная, основанная на хэшировании файлов.
+	- (ветка hash) Более сложная, основанная на хэшировании файлов.
 	Соответственно, сравниваются хэши. Файлы при этом читаются по одному разу.
-	Ее недостаток - она работает сильно медленнее (по крайней мере с SHA1),
+	Ее недостаток - она работает сильно медленнее: MD5, 100мс против 500мс (папки 13 элем., 40 мб / 21 элем., 64 мб),
 	поскольку издержки на хэширование превышают издержки на повторное частичное чтение файлов.
 
+Моя текущая цель - это оптимизировать оба решения и сравнить их.
 
 =========================================================================
 EN:
@@ -36,7 +37,9 @@ There are 2 versions:
 	It works fast. Especially when used on smaller data.
 	It's disadvantage - reading is performed several times (though most of the times not fully)
 
-	- (branch hash_version) More complex, based on file hashing.
+	- (branch hash) More complex, based on file hashing.
 	Respectively, hashes are compared. The files are read only once.
-	It's disadvantage - it works much slower (at least with SHA1),
+	It's disadvantage - it works much slower: MD5, 100ms vs 500ms (folders 13 elem., 40 mb / 21 elem., 64 mb),
 	since hashing overhead exceeds repeated partial file reading overhead. 
+
+My current goal is to optimize both solutions and check the difference.
